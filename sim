@@ -1,0 +1,1680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Simulation - DIG3171 Fork Tutorial</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+            background-color: #ffffff;
+            color: #1f2328;
+            line-height: 1.5;
+            margin-left: 350px;
+        }
+
+        /* Task Panel */
+        .task-panel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 350px;
+            height: 100vh;
+            background-color: #f6f8fa;
+            border-right: 1px solid #d1d9e0;
+            z-index: 1000;
+            padding: 24px;
+            overflow-y: auto;
+            box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .task-card {
+            background-color: #ffffff;
+            border: 1px solid #d1d9e0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .task-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2328;
+            margin-bottom: 12px;
+        }
+
+        .task-description {
+            color: #1f2328;
+            margin-bottom: 16px;
+            line-height: 1.6;
+        }
+
+        .task-hint {
+            background-color: #dbeafe;
+            border-left: 3px solid #0969da;
+            padding: 12px 16px;
+            border-radius: 6px;
+            color: #0969da;
+            font-size: 14px;
+        }
+
+        .task-counter {
+            background-color: #0969da;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 12px;
+        }
+
+        /* GitHub Header */
+        .header {
+            background-color: #f6f8fa;
+            border-bottom: 1px solid #d1d9e0;
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            color: #1f2328;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .nav-items {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .nav-item {
+            color: #656d76;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            opacity: 0.6;
+        }
+
+        .user-menu {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: #d1d9e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #1f2328;
+            font-weight: 600;
+        }
+
+        /* Repository Header */
+        .repo-header {
+            background-color: #ffffff;
+            padding: 16px 0;
+            border-bottom: 1px solid #d1d9e0;
+        }
+
+        .repo-nav {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 32px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .repo-owner {
+            color: #0969da;
+            text-decoration: none;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .repo-separator {
+            color: #656d76;
+            font-size: 20px;
+            margin: 0 4px;
+        }
+
+        .repo-name {
+            color: #0969da;
+            text-decoration: none;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        /* Repository Content */
+        .repo-content {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 24px 32px;
+            background-color: #ffffff;
+            position: relative;
+        }
+
+        .repo-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .left-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .right-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .action-btn {
+            background-color: #f6f8fa;
+            color: #656d76;
+            border: 1px solid #d1d9e0;
+            border-radius: 6px;
+            padding: 8px 16px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .fork-btn {
+            background-color: #f6f8fa;
+            color: #1f2328;
+            border: 1px solid #d1d9e0;
+            border-radius: 6px;
+            padding: 8px 16px;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background-color 0.2s;
+            font-weight: 500;
+        }
+
+        .fork-btn:hover {
+            background-color: #f3f4f6;
+        }
+
+        .repo-description {
+            color: #656d76;
+            margin-bottom: 24px;
+            font-size: 16px;
+        }
+
+        /* Sidebar */
+        .repo-sidebar {
+            position: absolute;
+            right: 0;
+            top: 100px;
+            width: 280px;
+            background-color: #ffffff;
+        }
+
+        .about-section {
+            border: 1px solid #d1d9e0;
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .about-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .about-title {
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .settings-icon {
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 3px;
+            color: #656d76;
+        }
+
+        .settings-icon:hover {
+            background-color: #f6f8fa;
+        }
+
+        .about-description {
+            color: #656d76;
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+
+        .website-link {
+            color: #0969da;
+            text-decoration: none;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* File Explorer */
+        .file-explorer {
+            background-color: #ffffff;
+            border: 1px solid #d1d9e0;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-right: 320px;
+        }
+
+        .file-header {
+            background-color: #f6f8fa;
+            padding: 16px;
+            border-bottom: 1px solid #d1d9e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .branch-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .branch-btn {
+            background-color: #ffffff;
+            border: 1px solid #d1d9e0;
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            opacity: 0.6;
+        }
+
+        .file-list {
+            padding: 0;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            border-bottom: 1px solid #d1d9e0;
+            color: #0969da;
+            text-decoration: none;
+            transition: background-color 0.2s;
+        }
+
+        .file-item:hover {
+            background-color: #f6f8fa;
+        }
+
+        .file-item.disabled {
+            color: #656d76;
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .file-icon {
+            margin-right: 12px;
+            width: 16px;
+            text-align: center;
+        }
+
+        .file-name {
+            flex: 1;
+        }
+
+        .file-message {
+            color: #656d76;
+            font-size: 14px;
+            margin-right: 16px;
+            flex: 1;
+            text-align: right;
+        }
+
+        /* Settings Views */
+        .settings-view {
+            background-color: #ffffff;
+            min-height: 100vh;
+        }
+
+        .settings-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 32px;
+            display: flex;
+            gap: 24px;
+        }
+
+        .settings-nav {
+            width: 280px;
+            padding: 24px 0;
+        }
+
+        .settings-nav-item {
+            display: block;
+            padding: 8px 16px;
+            color: #656d76;
+            text-decoration: none;
+            border-radius: 6px;
+            margin-bottom: 4px;
+            cursor: pointer;
+        }
+
+        .settings-nav-item.active {
+            background-color: #f6f8fa;
+            color: #1f2328;
+            font-weight: 600;
+        }
+
+        .settings-content {
+            flex: 1;
+            padding: 24px 0;
+        }
+
+        .settings-section {
+            margin-bottom: 24px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid #d1d9e0;
+        }
+
+        .settings-section:last-child {
+            border-bottom: none;
+        }
+
+        .settings-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .settings-description {
+            color: #656d76;
+            margin-bottom: 16px;
+        }
+
+        .pages-source-section {
+            background-color: #f6f8fa;
+            border: 1px solid #d1d9e0;
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .source-dropdown {
+            background-color: #ffffff;
+            border: 1px solid #d1d9e0;
+            border-radius: 6px;
+            padding: 8px 12px;
+            margin-right: 12px;
+            cursor: pointer;
+        }
+
+        .branch-dropdown {
+            background-color: #ffffff;
+            border: 1px solid #d1d9e0;
+            border-radius: 6px;
+            padding: 8px 12px;
+            margin-right: 12px;
+            cursor: pointer;
+        }
+
+        .save-btn {
+            background-color: #1f883d;
+            color: #ffffff;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .building-notice {
+            background-color: #fff8dc;
+            border: 1px solid #f0ad4e;
+            border-radius: 6px;
+            padding: 12px;
+            margin: 16px 0;
+            color: #8a6d3b;
+        }
+
+        .success-notice {
+            background-color: #d4f7d4;
+            border: 1px solid #1f883d;
+            border-radius: 6px;
+            padding: 12px;
+            margin: 16px 0;
+            color: #1f883d;
+        }
+
+        .site-link {
+            background-color: #f6f8fa;
+            border: 1px solid #d1d9e0;
+            border-radius: 6px;
+            padding: 12px;
+            margin: 8px 0;
+            font-family: monospace;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .copy-btn {
+            background-color: #0969da;
+            color: #ffffff;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        /* File Editor View */
+        .file-editor-view {
+            background-color: #ffffff;
+            min-height: 100vh;
+        }
+
+        .editor-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 24px 32px;
+        }
+
+        .editor-header {
+            margin-bottom: 24px;
+        }
+
+        .editor-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .editor-tabs {
+            display: flex;
+            gap: 16px;
+            border-bottom: 1px solid #d1d9e0;
+        }
+
+        .editor-tab {
+            padding: 12px 16px;
+            border: none;
+            background: none;
+            color: #656d76;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+        }
+
+        .editor-tab.active {
+            color: #1f2328;
+            font-weight: 600;
+            border-bottom-color: #fd7e14;
+        }
+
+        .editor-content {
+            background-color: #f6f8fa;
+            border: 1px solid #d1d9e0;
+            border-radius: 6px;
+            padding: 16px;
+            margin: 24px 0;
+        }
+
+        .code-editor {
+            width: 100%;
+            height: 300px;
+            border: none;
+            background: none;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 14px;
+            resize: vertical;
+            outline: none;
+        }
+
+        .preview-frame {
+            width: 100%;
+            height: 300px;
+            border: none;
+            background-color: #ffffff;
+            border-radius: 6px;
+        }
+
+        .commit-section {
+            background-color: #f6f8fa;
+            border: 1px solid #d1d9e0;
+            border-radius: 6px;
+            padding: 16px;
+        }
+
+        .commit-title {
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .commit-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d1d9e0;
+            border-radius: 6px;
+            margin-bottom: 12px;
+        }
+
+        .commit-textarea {
+            width: 100%;
+            height: 80px;
+            padding: 8px 12px;
+            border: 1px solid #d1d9e0;
+            border-radius: 6px;
+            margin-bottom: 16px;
+            resize: vertical;
+        }
+
+        .commit-btn {
+            background-color: #1f883d;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        /* Fork Creation Form */
+        .fork-form {
+            background-color: #ffffff;
+            min-height: 100vh;
+            padding: 24px;
+        }
+
+        .form-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #ffffff;
+        }
+
+        .form-header {
+            margin-bottom: 32px;
+            text-align: center;
+        }
+
+        .form-title {
+            font-size: 32px;
+            font-weight: 600;
+            color: #1f2328;
+            margin-bottom: 8px;
+        }
+
+        .form-subtitle {
+            color: #656d76;
+            font-size: 16px;
+        }
+
+        .original-repo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 32px;
+            padding: 16px;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+
+        .form-section {
+            background-color: #ffffff;
+            border: 1px solid #d1d9e0;
+            border-radius: 6px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: #1f2328;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 8px 12px;
+            background-color: #ffffff;
+            border: 1px solid #d1d9e0;
+            border-radius: 6px;
+            color: #1f2328;
+            font-size: 16px;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #0969da;
+            box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.3);
+        }
+
+        .form-textarea {
+            width: 100%;
+            padding: 8px 12px;
+            background-color: #ffffff;
+            border: 1px solid #d1d9e0;
+            border-radius: 6px;
+            color: #1f2328;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .create-fork-btn {
+            background-color: #1f883d;
+            color: #ffffff;
+            border: none;
+            border-radius: 6px;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            width: 100%;
+        }
+
+        .create-fork-btn:hover {
+            background-color: #1a7f37;
+        }
+
+        /* Success Popup */
+        .success-popup {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #1f883d;
+            color: #ffffff;
+            padding: 16px 20px;
+            border-radius: 6px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 1001;
+        }
+
+        .success-popup.show {
+            transform: translateX(0);
+        }
+
+        .success-popup .success-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        /* Highlight effects */
+        .highlight-pulse {
+            animation: highlightPulse 2s infinite;
+        }
+
+        @keyframes highlightPulse {
+            0%, 100% { box-shadow: 0 0 0 2px rgba(9, 105, 218, 0.3); }
+            50% { box-shadow: 0 0 0 6px rgba(9, 105, 218, 0.6); }
+        }
+
+        .highlight-line {
+            background-color: rgba(255, 215, 0, 0.3);
+            animation: lineHighlight 2s infinite;
+        }
+
+        @keyframes lineHighlight {
+            0%, 100% { background-color: rgba(255, 215, 0, 0.3); }
+            50% { background-color: rgba(255, 215, 0, 0.6); }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* About Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .modal-content {
+            background-color: #ffffff;
+            padding: 24px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-header {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d1d9e0;
+            border-radius: 6px;
+            margin-bottom: 12px;
+        }
+
+        .modal-textarea {
+            width: 100%;
+            height: 80px;
+            padding: 8px 12px;
+            border: 1px solid #d1d9e0;
+            border-radius: 6px;
+            margin-bottom: 16px;
+            resize: vertical;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .modal-btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .modal-btn.primary {
+            background-color: #1f883d;
+            color: #ffffff;
+            border: none;
+        }
+
+        .modal-btn.secondary {
+            background-color: #f6f8fa;
+            color: #1f2328;
+            border: 1px solid #d1d9e0;
+        }
+
+        /* Repository tabs */
+        .repo-tabs {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 16px;
+            border-bottom: 1px solid #d1d9e0;
+        }
+
+        .repo-tab {
+            padding: 8px 0;
+            color: #656d76;
+            text-decoration: none;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+        }
+
+        .repo-tab.active {
+            color: #1f2328;
+            font-weight: 600;
+            border-bottom-color: #fd7e14;
+        }
+    </style>
+</head>
+<body>
+    <!-- Task Panel -->
+    <div class="task-panel" id="taskPanel">
+        <div class="task-card">
+            <div class="task-counter" id="taskCounter">Step 1 of 15</div>
+            <div class="task-title" id="taskTitle">Fork the Repository</div>
+            <div class="task-description" id="taskDescription">
+                After creating your own GitHub account, you need to fork (copy) this repository to your account. This creates your own version that you can modify.
+            </div>
+            <div class="task-hint" id="taskHint">
+                💡 Look for the 'Fork' button on the right side above the file list.
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Popup -->
+    <div class="success-popup" id="successPopup">
+        <div class="success-title">Action Completed! ✅</div>
+        <div class="success-message" id="successMessage">Great job!</div>
+    </div>
+
+    <!-- About Modal -->
+    <div class="modal hidden" id="aboutModal">
+        <div class="modal-content">
+            <div class="modal-header">Edit repository details</div>
+            <input type="text" class="modal-input" id="modalDescription" placeholder="Description (optional)">
+            <input type="text" class="modal-input" id="modalWebsite" placeholder="Website">
+            <div class="modal-buttons">
+                <button class="modal-btn secondary" onclick="closeAboutModal()">Cancel</button>
+                <button class="modal-btn primary" id="saveAboutBtn">Save changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Original Repository View -->
+    <div id="originalRepoView">
+        <header class="header">
+            <div class="logo">
+                <svg height="32" viewBox="0 0 16 16" width="32" fill="currentColor">
+                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.03 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+                </svg>
+                GitHub
+            </div>
+            <nav class="nav-items">
+                <span class="nav-item">Pull requests</span>
+                <span class="nav-item">Issues</span>
+                <span class="nav-item">Marketplace</span>
+                <span class="nav-item">Explore</span>
+                <div class="user-menu">U</div>
+            </nav>
+        </header>
+
+        <div class="repo-header">
+            <div class="repo-nav">
+                <span class="repo-owner">ekjphd</span>
+                <span class="repo-separator">/</span>
+                <span class="repo-name">DIG3171</span>
+            </div>
+        </div>
+
+        <div class="repo-content">
+            <div class="repo-actions">
+                <div class="left-actions">
+                    <button class="action-btn">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                            <path d="M2 2.5A2.5 2.5 0 014.5 0h8.75a.75.75 0 01.75.75v12.5a.75.75 0 01-.75.75h-2.5a.75.75 0 110-1.5h1.75v-2h-8a1 1 0 00-.714 1.7.75.75 0 01-1.072 1.05A2.495 2.495 0 012 10.5v-8zm10.5-1V9h-8c-.356 0-.694.074-1 .208V2.5a1 1 0 011-1h8zM5 12.25v3.25a.25.25 0 00.4.2l1.45-1.087a.25.25 0 01.3 0L8.6 15.7a.25.25 0 00.4-.2v-3.25a.25.25 0 00-.25-.25h-3.5a.25.25 0 00-.25.25z"/>
+                        </svg>
+                        Pin
+                    </button>
+                    <button class="action-btn">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                            <path d="M8 .25a.75.75 0 01.673.418l1.882 3.815 4.21.612a.75.75 0 01.416 1.279l-3.046 2.97.719 4.192a.75.75 0 01-1.088.791L8 12.347l-3.766 1.98a.75.75 0 01-1.088-.79l.72-4.194L.818 6.374a.75.75 0 01.416-1.28l4.21-.611L7.327.668A.75.75 0 018 .25z"/>
+                        </svg>
+                        Star
+                        <span style="margin-left: 4px;">0</span>
+                    </button>
+                </div>
+                <div class="right-actions">
+                    <button class="action-btn">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                            <path d="M8 2a5.53 5.53 0 00-3.594 1.342c-.766.66-1.321 1.52-1.464 2.383C1.266 6.095 0 7.555 0 9.318 0 11.366 1.708 13 3.781 13h8.906C14.502 13 16 11.502 16 9.318c0-1.763-1.266-3.223-2.942-3.593-.143-.863-.698-1.723-1.464-2.383A5.53 5.53 0 008 2z"/>
+                        </svg>
+                        Watch
+                        <span style="margin-left: 4px;">1</span>
+                    </button>
+                    <button class="fork-btn" id="forkBtn">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                            <path fill-rule="evenodd" d="M5 3.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm0 2.122a2.25 2.25 0 10-1.5 0v.878A2.25 2.25 0 005.75 8.5h1.5v2.128a2.25 2.25 0 101.5 0V8.5h1.5a2.25 2.25 0 002.25-2.25v-.878a2.25 2.25 0 10-1.5 0v.878a.75.75 0 01-.75.75h-4.5A.75.75 0 015 6.25v-.878zm3.75 7.378a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm3-8.75a.75.75 0 100-1.5.75.75 0 000 1.5z"></path>
+                        </svg>
+                        Fork
+                        <span style="margin-left: 4px;">1</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="repo-description">
+                Welcome to the Sample Github Portfolio
+            </div>
+
+            <!-- Sidebar -->
+            <div class="repo-sidebar">
+                <div class="about-section">
+                    <div class="about-header">
+                        <span class="about-title">About</span>
+                        <svg class="settings-icon" width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                            <path d="M8 9a1.5 1.5 0 100-3 1.5 1.5 0 000 3zM1.5 9a1.5 1.5 0 100-3 1.5 1.5 0 000 3zm13 0a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"/>
+                        </svg>
+                    </div>
+                    <div class="about-description">
+                        Welcome to the Sample Github Portfolio
+                    </div>
+                </div>
+            </div>
+
+            <div class="file-explorer">
+                <div class="file-header">
+                    <div class="branch-info">
+                        <button class="branch-btn">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                                <path fill-rule="evenodd" d="M11.75 2.5a.75.75 0 100 1.5.75.75 0 000-1.5zm-2.25.75a2.25 2.25 0 113 2.122V6A2.5 2.5 0 0110 8.5H6a1 1 0 00-1 1v1.128a2.251 2.251 0 11-1.5 0V5.372a2.25 2.25 0 111.5 0v1.836A2.492 2.492 0 016 7h4a1 1 0 001-1v-.628A2.25 2.25 0 019.5 3.25zM4.25 12a.75.75 0 100 1.5.75.75 0 000-1.5zM3.5 3.25a.75.75 0 111.5 0 .75.75 0 01-1.5 0z"/>
+                            </svg>
+                            main
+                        </button>
+                    </div>
+                    <div style="color: #656d76; font-size: 14px;">Latest commit 2 days ago</div>
+                </div>
+                <div class="file-list">
+                    <div class="file-item disabled">
+                        <span class="file-icon">📁</span>
+                        <span class="file-name">assignments</span>
+                        <span class="file-message">Assignment files</span>
+                    </div>
+                    <div class="file-item disabled">
+                        <span class="file-icon">📁</span>
+                        <span class="file-name">resources</span>
+                        <span class="file-message">Course resources</span>
+                    </div>
+                    <div class="file-item disabled">
+                        <span class="file-icon">📄</span>
+                        <span class="file-name">index.html</span>
+                        <span class="file-message">Main page</span>
+                    </div>
+                    <div class="file-item disabled">
+                        <span class="file-icon">📄</span>
+                        <span class="file-name">README.md</span>
+                        <span class="file-message">Course information</span>
+                    </div>
+                    <div class="file-item disabled">
+                        <span class="file-icon">📄</span>
+                        <span class="file-name">syllabus.md</span>
+                        <span class="file-message">Course syllabus</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User's Forked Repository View -->
+    <div id="userRepoView" class="hidden">
+        <header class="header">
+            <div class="logo">
+                <svg height="32" viewBox="0 0 16 16" width="32" fill="currentColor">
+                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.03 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+                </svg>
+                GitHub
+            </div>
+            <nav class="nav-items">
+                <span class="nav-item">Pull requests</span>
+                <span class="nav-item">Issues</span>
+                <span class="nav-item">Marketplace</span>
+                <span class="nav-item">Explore</span>
+                <div class="user-menu">U</div>
+            </nav>
+        </header>
+
+        <div class="repo-header">
+            <div class="repo-nav">
+                <span class="repo-owner">YourUsername</span>
+                <span class="repo-separator">/</span>
+                <span class="repo-name">DIG3171</span>
+                <span style="color: #656d76; font-size: 14px; margin-left: 8px;">forked from ekjphd/DIG3171</span>
+            </div>
+        </div>
+
+        <div class="repo-content">
+            <div class="repo-tabs">
+                <span class="repo-tab active" id="codeTab">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style="margin-right: 8px;">
+                        <path fill-rule="evenodd" d="M4.72 3.22a.75.75 0 011.06 1.06L2.06 8l3.72 3.72a.75.75 0 11-1.06 1.06L.47 8.53a.75.75 0 010-1.06l4.25-4.25zm6.56 0a.75.75 0 10-1.06 1.06L13.94 8l-3.72 3.72a.75.75 0 101.06 1.06l4.25-4.25a.75.75 0 000-1.06L11.28 3.22z"/>
+                    </svg>
+                    Code
+                </span>
+                <span class="repo-tab">Issues</span>
+                <span class="repo-tab">Pull requests</span>
+                <span class="repo-tab">Actions</span>
+                <span class="repo-tab">Projects</span>
+                <span class="repo-tab">Security</span>
+                <span class="repo-tab">Insights</span>
+                <span class="repo-tab" id="settingsTab">Settings</span>
+            </div>
+
+            <div class="repo-description">
+                My DIG 3171 Course Repository
+            </div>
+
+            <!-- Sidebar -->
+            <div class="repo-sidebar">
+                <div class="about-section">
+                    <div class="about-header">
+                        <span class="about-title">About</span>
+                        <svg class="settings-icon" id="aboutEditBtn" width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                            <path d="M11.013 1.427a1.75 1.75 0 012.474 0l1.086 1.086a1.75 1.75 0 010 2.474l-8.61 8.61c-.21.21-.47.364-.756.445l-3.251.93a.75.75 0 01-.927-.928l.929-3.25a1.75 1.75 0 01.445-.758l8.61-8.61zm1.414 1.06a.25.25 0 00-.354 0L10.811 3.75l1.439 1.44 1.263-1.263a.25.25 0 000-.354l-1.086-1.086zM11.189 6.25L9.75 4.81l-6.286 6.287a.25.25 0 00-.064.108l-.558 1.953 1.953-.558a.249.249 0 00.108-.064l6.286-6.286z"/>
+                        </svg>
+                    </div>
+                    <div class="about-description" id="aboutDescription">
+                        My DIG 3171 Course Repository
+                    </div>
+                    <div class="website-link" id="websiteLink" style="display: none;">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                            <path fill-rule="evenodd" d="M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z"/>
+                        </svg>
+                        <span id="websiteLinkText"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="file-explorer">
+                <div class="file-header">
+                    <div class="branch-info">
+                        <button class="branch-btn">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                                <path fill-rule="evenodd" d="M11.75 2.5a.75.75 0 100 1.5.75.75 0 000-1.5zm-2.25.75a2.25 2.25 0 113 2.122V6A2.5 2.5 0 0110 8.5H6a1 1 0 00-1 1v1.128a2.251 2.251 0 11-1.5 0V5.372a2.25 2.25 0 111.5 0v1.836A2.492 2.492 0 016 7h4a1 1 0 001-1v-.628A2.25 2.25 0 019.5 3.25zM4.25 12a.75.75 0 100 1.5.75.75 0 000-1.5zM3.5 3.25a.75.75 0 111.5 0 .75.75 0 01-1.5 0z"/>
+                            </svg>
+                            main
+                        </button>
+                    </div>
+                    <div style="color: #656d76; font-size: 14px;">Latest commit 2 days ago</div>
+                </div>
+                <div class="file-list">
+                    <div class="file-item disabled">
+                        <span class="file-icon">📁</span>
+                        <span class="file-name">assignments</span>
+                        <span class="file-message">Assignment files</span>
+                    </div>
+                    <div class="file-item disabled">
+                        <span class="file-icon">📁</span>
+                        <span class="file-name">resources</span>
+                        <span class="file-message">Course resources</span>
+                    </div>
+                    <div class="file-item" id="indexFile" style="cursor: pointer;">
+                        <span class="file-icon">📄</span>
+                        <span class="file-name">index.html</span>
+                        <span class="file-message">Main page</span>
+                    </div>
+                    <div class="file-item disabled">
+                        <span class="file-icon">📄</span>
+                        <span class="file-name">README.md</span>
+                        <span class="file-message">Course information</span>
+                    </div>
+                    <div class="file-item disabled">
+                        <span class="file-icon">📄</span>
+                        <span class="file-name">syllabus.md</span>
+                        <span class="file-message">Course syllabus</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- File Editor View -->
+    <div id="fileEditorView" class="file-editor-view hidden">
+        <header class="header">
+            <div class="logo">
+                <svg height="32" viewBox="0 0 16 16" width="32" fill="currentColor">
+                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.03 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+                </svg>
+                GitHub
+            </div>
+        </header>
+
+        <div class="editor-container">
+            <div class="editor-header">
+                <h1 class="editor-title">Editing YourUsername/DIG3171/index.html</h1>
+                <div class="editor-tabs">
+                    <button class="editor-tab active" id="editTab">Edit file</button>
+                    <button class="editor-tab" id="previewTab">Preview</button>
+                </div>
+            </div>
+
+            <div id="editMode">
+                <div class="editor-content">
+                    <textarea class="code-editor" id="fileEditor">&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+    &lt;title&gt;DIG3171 Course&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1&gt;Welcome to DIG 3171&lt;/h1&gt;
+    &lt;p&gt;This is the main page for the DIG3171 course.&lt;/p&gt;
+&lt;/body&gt;
+&lt;/html&gt;</textarea>
+                </div>
+            </div>
+
+            <div id="previewMode" class="hidden">
+                <div class="editor-content">
+                    <iframe class="preview-frame" id="previewFrame" srcdoc=""></iframe>
+                </div>
+            </div>
+
+            <div class="commit-section">
+                <h3 class="commit-title">Commit changes</h3>
+                <input type="text" class="commit-input" placeholder="Update index.html">
+                <textarea class="commit-textarea" placeholder="Add an optional extended description..."></textarea>
+                <button class="commit-btn" id="commitBtn">Commit changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fork Creation Form -->
+    <div id="forkFormView" class="fork-form hidden">
+        <header class="header">
+            <div class="logo">
+                <svg height="32" viewBox="0 0 16 16" width="32" fill="currentColor">
+                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.03 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.20 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+                </svg>
+                GitHub
+            </div>
+        </header>
+
+        <div class="form-container">
+            <div class="form-header">
+                <h1 class="form-title">Create a new fork</h1>
+                <p class="form-subtitle">A fork is a copy of a repository that allows you to freely experiment with changes.</p>
+            </div>
+
+            <div class="original-repo">
+                <strong>ekjphd/DIG3171</strong> → <strong>YourUsername/DIG3171</strong>
+            </div>
+
+            <div class="form-section">
+                <div class="form-group">
+                    <label for="repoName" class="form-label">Repository name *</label>
+                    <input type="text" class="form-input" id="repoName" value="DIG3171">
+                </div>
+
+                <div class="form-group">
+                    <label for="repoDescription" class="form-label">Description (optional)</label>
+                    <textarea class="form-textarea" id="repoDescription" placeholder="Welcome to the Sample Github Portfolio">Welcome to the Sample Github Portfolio</textarea>
+                </div>
+
+                <button class="create-fork-btn" id="createForkBtn">Create fork</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Views -->
+    <div id="settingsView" class="settings-view hidden">
+        <header class="header">
+            <div class="logo">
+                <svg height="32" viewBox="0 0 16 16" width="32" fill="currentColor">
+                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.03 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.20 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+                </svg>
+                GitHub
+            </div>
+        </header>
+
+        <div class="repo-header">
+            <div class="repo-nav">
+                <span class="repo-owner">YourUsername</span>
+                <span class="repo-separator">/</span>
+                <span class="repo-name">DIG3171</span>
+            </div>
+        </div>
+
+        <div class="settings-container">
+            <nav class="settings-nav">
+                <a class="settings-nav-item">General</a>
+                <a class="settings-nav-item">Access</a>
+                <a class="settings-nav-item">Code and automation</a>
+                <a class="settings-nav-item">Security</a>
+                <a class="settings-nav-item">Integrations</a>
+                <a class="settings-nav-item active" id="pagesNavItem">Pages</a>
+            </nav>
+
+            <div class="settings-content">
+                <div id="pagesSettings">
+                    <h2 class="settings-title">GitHub Pages</h2>
+                    <p class="settings-description">
+                        GitHub Pages is designed to host your personal, organization, or project pages from a GitHub repository.
+                    </p>
+
+                    <div class="settings-section">
+                        <h3 style="margin-bottom: 8px;">Source</h3>
+                        <p style="color: #656d76; margin-bottom: 16px;">
+                            Deploy from a branch
+                        </p>
+                        <div class="pages-source-section">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600;">Branch</label>
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <select class="branch-dropdown" id="branchSelect">
+                                    <option value="none">None</option>
+                                    <option value="main">main</option>
+                                </select>
+                                <span>/</span>
+                                <span>(root)</span>
+                                <button class="save-btn" id="saveSourceBtn" disabled>Save</button>
+                            </div>
+                        </div>
+
+                        <div id="buildingStatus" class="building-notice hidden">
+                            <strong>Your site is being built from the main branch.</strong>
+                            <p>Your GitHub Pages site is currently being built from the main branch. For more information, see "Configuring a publishing source for your GitHub Pages site."</p>
+                        </div>
+
+                        <div id="successStatus" class="success-notice hidden">
+                            <strong>Your site is live at</strong>
+                            <div class="site-link">
+                                <span id="siteUrl">https://yourusername.github.io/DIG3171/</span>
+                                <button class="copy-btn" id="copyLinkBtn">Copy</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentTask = 1;
+        let hasModifiedTitle = false;
+        let hasAddedPersonalInfo = false;
+
+        const tasks = {
+            1: {
+                title: "Fork the Repository",
+                description: "After creating your own GitHub account, you need to fork (copy) this repository to your account. This creates your own version that you can modify.",
+                hint: "💡 Look for the 'Fork' button on the right side above the file list.",
+                target: "#forkBtn"
+            },
+            2: {
+                title: "Modify Repository Name",
+                description: "You can customize the name of your forked repository. Change it to something more personal if you'd like, or keep the original name.",
+                hint: "💡 Edit the repository name in the text field above.",
+                target: "#repoName"
+            },
+            3: {
+                title: "Modify Description",
+                description: "Add or modify the repository description to make it your own. This helps others understand what your fork is for.",
+                hint: "💡 Click in the description field and modify the text.",
+                target: "#repoDescription"
+            },
+            4: {
+                title: "Create Fork",
+                description: "Now click 'Create fork' to complete the forking process. This will create your personal copy of the repository.",
+                hint: "💡 Click the green 'Create fork' button to finish.",
+                target: "#createForkBtn"
+            },
+            5: {
+                title: "Edit index.html",
+                description: "Great! You now have your own fork. Next, let's edit the main page. Click on index.html to open it for editing.",
+                hint: "💡 Click on the 'index.html' file in the file list.",
+                target: "#indexFile"
+            },
+            6: {
+                title: "Replace the Title Text",
+                description: "Now you'll edit the content. Replace the title text with your own title for your webpage.",
+                hint: "💡 Look for the &lt;h1&gt; tag and replace 'Welcome to DIG 3171' with your own title.",
+                target: "#fileEditor"
+            },
+            7: {
+                title: "Add Personal Information",
+                description: "Add a short sentence about yourself - your major, key skills, or interests. This will personalize your webpage.",
+                hint: "💡 Add a new paragraph below the title with information about yourself.",
+                target: "#fileEditor"
+            },
+            8: {
+                title: "Preview Changes",
+                description: "Before committing, let's preview how your changes will look. Click the Preview tab to see your webpage.",
+                hint: "💡 Click the 'Preview' tab to see how your changes look.",
+                target: "#previewTab"
+            },
+            9: {
+                title: "Commit Changes",
+                description: "Perfect! Your changes look good. Now commit them to save your modifications to the repository.",
+                hint: "💡 Scroll down and click 'Commit changes' to save your work.",
+                target: "#commitBtn"
+            },
+            10: {
+                title: "Go to Settings",
+                description: "Excellent work! You've successfully forked and edited the repository. Now let's go to Settings to set up GitHub Pages.",
+                hint: "💡 Click on the 'Settings' tab in the repository navigation.",
+                target: "#settingsTab"
+            },
+            11: {
+                title: "Click Pages",
+                description: "In the settings menu, find and click on 'Pages' to configure GitHub Pages for your repository.",
+                hint: "💡 Look for 'Pages' in the left sidebar and click on it.",
+                target: "#pagesNavItem"
+            },
+            12: {
+                title: "Deploy from Branch",
+                description: "Configure GitHub Pages to deploy from the main branch. Select 'main' from the branch dropdown.",
+                hint: "💡 Click the branch dropdown and select 'main', then click Save.",
+                target: "#branchSelect"
+            },
+            13: {
+                title: "Site Building",
+                description: "Great! Your site is now being built. GitHub Pages is processing your files and will soon make your site available online.",
+                hint: "💡 Wait for the building process to complete.",
+                target: "#buildingStatus"
+            },
+            14: {
+                title: "Copy Your Site Link",
+                description: "Excellent! Your site is now live. Copy the link to your published website so you can share it.",
+                hint: "💡 Click the 'Copy' button to copy your site URL.",
+                target: "#copyLinkBtn"
+            },
+            15: {
+                title: "Edit Repository About Section",
+                description: "Finally, let's update your repository's about section. Click the 'Code' tab to return to your repository, then click the edit button in the About section.",
+                hint: "💡 First click 'Code' to return to your repo, then click the edit icon in the About section on the right.",
+                target: "#aboutEditBtn"
+            }
+        };
+
+        function showTask(taskNumber) {
+            const task = tasks[taskNumber];
+            document.getElementById('taskCounter').textContent = `Step ${taskNumber} of 15`;
+            document.getElementById('taskTitle').textContent = task.title;
+            document.getElementById('taskDescription').textContent = task.description;
+            document.getElementById('taskHint').innerHTML = task.hint;
+            
+            if (task.target) {
+                setTimeout(() => {
+                    const targetElement = document.querySelector(task.target);
+                    if (targetElement) {
+                        targetElement.classList.add('highlight-pulse');
+                    }
+                }, 500);
+            }
+        }
+
+        function showSuccess(title, message) {
+            const popup = document.getElementById('successPopup');
+            popup.querySelector('.success-title').textContent = title;
+            popup.querySelector('#successMessage').textContent = message;
+            popup.classList.add('show');
+            
+            setTimeout(() => {
+                popup.classList.remove('show');
+            }, 3000);
+        }
+
+        function nextTask() {
+            // Remove highlight from current target
+            const currentTaskData = tasks[currentTask];
+            if (currentTaskData.target) {
+                const targetElement = document.querySelector(currentTaskData.target);
+                if (targetElement) {
+                    targetElement.classList.remove('highlight-pulse');
+                }
+            }
+            
+            currentTask++;
+            if (currentTask <= 15) {
+                showTask(currentTask);
+            }
+        }
+
+        function highlightTitleLine() {
+            const editor = document.getElementById('fileEditor');
+            const content = editor.value;
+            const lines = content.split('\n');
+            
+            // Find the h1 line
+            for (let i = 0; i < lines.length; i++) {
+                if (lines[i].includes('<h1>')) {
+                    // Add highlighting effect
+                    setTimeout(() => {
+                        editor.focus();
+                        const lineStart = lines.slice(0, i).join('\n').length + (i > 0 ? 1 : 0);
+                        const lineEnd = lineStart + lines[i].length;
+                        editor.setSelectionRange(lineStart, lineEnd);
+                    }, 2000);
+                    break;
+                }
+            }
+        }
+
+        function closeAboutModal() {
+            document.getElementById('aboutModal').classList.add('hidden');
+        }
+
+        // Task 1: Fork button click
+        document.getElementById('forkBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            if (currentTask === 1) {
+                showSuccess("Fork Started!", "Great! You clicked the Fork button.");
+                document.getElementById('originalRepoView').classList.add('hidden');
+                document.getElementById('forkFormView').classList.remove('hidden');
+                setTimeout(nextTask, 1500);
+            }
+        });
+
+        // Task 2: Repository name modification
+        document.getElementById('repoName').addEventListener('input', function() {
+            if (currentTask === 2) {
+                showSuccess("Name Modified!", "You've customized the repository name.");
+                setTimeout(nextTask, 1500);
+            }
+        });
+
+        // Task 3: Description modification
+        document.getElementById('repoDescription').addEventListener('input', function() {
+            if (currentTask === 3) {
+                showSuccess("Description Updated!", "Perfect description modification.");
+                setTimeout(nextTask, 1500);
+            }
+        });
+
+        // Task 4: Create fork button
+        document.getElementById('createForkBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            if (currentTask === 4) {
+                showSuccess("Fork Created!", "Your repository has been forked successfully!");
+                document.getElementById('forkFormView').classList.add('hidden');
+                document.getElementById('userRepoView').classList.remove('hidden');
+                setTimeout(nextTask, 1500);
+            }
+        });
+
+        // Task 5: Click on index.html file
+        document.getElementById('indexFile').addEventListener('click', function(e) {
+            e.preventDefault();
+            if (currentTask === 5) {
+                showSuccess("File Selected!", "Great! You opened index.html for editing.");
+                document.getElementById('userRepoView').classList.add('hidden');
+                document.getElementById('fileEditorView').classList.remove('hidden');
+                setTimeout(nextTask, 1500);
+            }
+        });
+
+        // Task 6: Edit file content (title modification)
+        document.getElementById('fileEditor').addEventListener('input', function() {
+            const content = this.value;
+            
+            if (currentTask === 6 && !hasModifiedTitle) {
+                // Check if the original title has been changed
+                if (!content.includes('Welcome to DIG 3171') || content.includes('<h1>') && !content.includes('<h1>Welcome to DIG 3171</h1>')) {
+                    hasModifiedTitle = true;
+                    showSuccess("Title Modified!", "Perfect! You've changed the title text.");
+                    setTimeout(() => {
+                        nextTask();
+                        // Highlight the title line after a delay
+                        setTimeout(highlightTitleLine, 1000);
+                    }, 1500);
+                }
+            } else if (currentTask === 7 && hasModifiedTitle && !hasAddedPersonalInfo) {
+                // Check if personal information has been added
+                const lines = content.split('\n');
+                let foundNewParagraph = false;
+                for (let line of lines) {
+                    if (line.includes('<p>') && !line.includes('This is the main page for the DIG3171 course.')) {
+                        foundNewParagraph = true;
+                        break;
+                    }
+                }
+                if (foundNewParagraph) {
+                    hasAddedPersonalInfo = true;
+                    showSuccess("Personal Info Added!", "Great! You've added information about yourself.");
+                    setTimeout(nextTask, 1500);
+                }
+            }
+        });
+
+        // Task 8: Preview tab click
+        document.getElementById('previewTab').addEventListener('click', function() {
+            if (currentTask === 8) {
+                showSuccess("Preview Activated!", "Great! You can now see how your changes look.");
+                
+                // Switch to preview mode
+                document.getElementById('editMode').classList.add('hidden');
+                document.getElementById('previewMode').classList.remove('hidden');
+                this.classList.add('active');
+                this.style.color = '#1f2328';
+                this.style.fontWeight = '600';
+                this.style.borderBottomColor = '#fd7e14';
+                document.getElementById('editTab').classList.remove('active');
+                document.getElementById('editTab').style.color = '#656d76';
+                document.getElementById('editTab').style.fontWeight = 'normal';
+                document.getElementById('editTab').style.borderBottomColor = 'transparent';
+                
+                // Update preview with current content
+                const content = document.getElementById('fileEditor').value;
+                document.getElementById('previewFrame').srcdoc = content;
+                
+                setTimeout(nextTask, 1500);
+            }
+        });
+
+        // Task 9: Commit changes
+        document.getElementById('commitBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            if (currentTask === 9) {
+                showSuccess("Changes Committed!", "Excellent! Your changes have been saved to the repository.");
+                // Return to the user repo view
+                document.getElementById('fileEditorView').classList.add('hidden');
+                document.getElementById('userRepoView').classList.remove('hidden');
+                setTimeout(nextTask, 1500);
+            }
+        });
+
+        // Task 10: Settings tab click
+        document.getElementById('settingsTab').addEventListener('click', function() {
+            if (currentTask === 10) {
+                showSuccess("Settings Opened!", "Perfect! You're now in the repository settings.");
+                document.getElementById('userRepoView').classList.add('hidden');
+                document.getElementById('settingsView').classList.remove('hidden');
+                setTimeout(nextTask, 1500);
+            }
+        });
+
+        // Task 11: Pages nav item click
+        document.getElementById('pagesNavItem').addEventListener('click', function() {
+            if (currentTask === 11) {
+                showSuccess("Pages Selected!", "Great! You found the Pages settings.");
+                setTimeout(nextTask, 1500);
+            }
+        });
+
+        // Task 12: Branch selection
+        document.getElementById('branchSelect').addEventListener('change', function() {
+            if (currentTask === 12 && this.value === 'main') {
+                document.getElementById('saveSourceBtn').disabled = false;
+                document.getElementById('saveSourceBtn').style.opacity = '1';
+                document.getElementById('saveSourceBtn').style.cursor = 'pointer';
+            }
+        });
+
+        document.getElementById('saveSourceBtn').addEventListener('click', function() {
+            if (currentTask === 12) {
+                showSuccess("Branch Selected!", "Excellent! You've configured Pages to deploy from main branch.");
+                // Show building status
+                document.getElementById('buildingStatus').classList.remove('hidden');
+                setTimeout(() => {
+                    nextTask();
+                    // Simulate build completion after a delay
+                    setTimeout(() => {
+                        document.getElementById('buildingStatus').classList.add('hidden');
+                        document.getElementById('successStatus').classList.remove('hidden');
+                        nextTask();
+                    }, 3000);
+                }, 1500);
+            }
+        });
+
+        // Task 14: Copy link button
+        document.getElementById('copyLinkBtn').addEventListener('click', function() {
+            if (currentTask === 14) {
+                showSuccess("Link Copied!", "Perfect! Your site URL has been copied to clipboard.");
+                setTimeout(nextTask, 1500);
+            }
+        });
+
+        // Task 15: About edit button (need to return to code tab first)
+        document.getElementById('codeTab').addEventListener('click', function() {
+            if (currentTask === 15) {
+                document.getElementById('settingsView').classList.add('hidden');
+                document.getElementById('userRepoView').classList.remove('hidden');
+                showSuccess("Returned to Code!", "Now click the edit button in the About section on the right.");
+                // Highlight the about edit button
+                setTimeout(() => {
+                    document.getElementById('aboutEditBtn').classList.add('highlight-pulse');
+                }, 1000);
+            }
+        });
+
+        document.getElementById('aboutEditBtn').addEventListener('click', function() {
+            if (currentTask === 15) {
+                document.getElementById('aboutModal').classList.remove('hidden');
+                document.getElementById('modalDescription').value = 'Welcome to the Sample Github Portfolio';
+                document.getElementById('modalWebsite').value = 'https://yourusername.github.io/DIG3171/';
+                showSuccess("About Dialog Opened!", "Update the description and add your website link!");
+            }
+        });
+
+        document.getElementById('saveAboutBtn').addEventListener('click', function() {
+            if (currentTask === 15) {
+                const description = document.getElementById('modalDescription').value;
+                const website = document.getElementById('modalWebsite').value;
+                
+                document.getElementById('aboutDescription').textContent = description;
+                if (website) {
+                    document.getElementById('websiteLink').style.display = 'flex';
+                    document.getElementById('websiteLinkText').textContent = website;
+                }
+                
+                closeAboutModal();
+                showSuccess("Tutorial Complete! 🎉", "Congratulations! You've successfully completed the GitHub Pages tutorial!");
+                
+                setTimeout(() => {
+                    showSuccess("Well Done!", "You now know how to fork, edit, commit, deploy, and manage your GitHub Pages site!");
+                }, 3000);
+            }
+        });
+
+        // Edit tab functionality
+        document.getElementById('editTab').addEventListener('click', function() {
+            document.getElementById('previewMode').classList.add('hidden');
+            document.getElementById('editMode').classList.remove('hidden');
+            this.classList.add('active');
+            this.style.color = '#1f2328';
+            this.style.fontWeight = '600';
+            this.style.borderBottomColor = '#fd7e14';
+            document.getElementById('previewTab').classList.remove('active');
+            document.getElementById('previewTab').style.color = '#656d76';
+            document.getElementById('previewTab').style.fontWeight = 'normal';
+            document.getElementById('previewTab').style.borderBottomColor = 'transparent';
+        });
+
+        // Initialize the simulation
+        showTask(1);
+    </script>
+</body>
+</html>
