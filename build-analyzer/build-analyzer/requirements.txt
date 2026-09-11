@@ -1,0 +1,5 @@
+# Optional but strongly recommended.
+# Without UnityPy, asset-level parsing is skipped.
+# Without brotli, .data.br builds cannot be opened.
+UnityPy>=1.20
+brotli>=1.0
