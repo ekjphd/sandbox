@@ -67,6 +67,9 @@ Claude went through several iterations as I kept prompting until it could create
 
 A ridged knob on top drags both rings by friction; because the outer ring is heavier, it lags behind the lighter inner ring, so the two rings land in different places. Four press-fit feet keep the flower level. It is actually easier to just push the petals than to spin from the top, as too vigorous spinning will unscrew the base. Final iterations included adding feet, which Claude initially tried to print separately rather than printing the base upside-down.
 
+### Download
+[Flower_Spinner.zip](cryptex-flower/Flower_Spinner.zip) — Bambu Studio 3MF files for both print plates: the petals (outer and inner rings, printed in rainbow PLA) and the base parts (base with feet, knob and spindle, nut, and spacer ring, printed in galaxy PLA).
+
 ### Images 
 
 <figure>
