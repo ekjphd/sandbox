@@ -1319,7 +1319,7 @@
             6: {
                 title: "Replace the Title Text",
                 description: "Now you'll edit the content. Replace the title text with your own title for your webpage.",
-                hint: "💡 Look for the &lt;h1&gt; tag and replace 'Welcome to DIG 3171' with your own title.",
+                hint: "💡 In the editor, find the line &lt;h1&gt;Welcome to DIG 3171&lt;/h1&gt; (just below &lt;body&gt;) and replace the words Welcome to DIG 3171 with your own title.",
                 target: "#fileEditor"
             },
             7: {
@@ -1458,18 +1458,31 @@
         });
 
         // Task 2: Repository name modification
+        // Finish once, after the student pauses typing, instead of on every keystroke
+        let nameTimer = null, nameDone = false;
         document.getElementById('repoName').addEventListener('input', function() {
-            if (currentTask === 2) {
-                showSuccess("Name Modified!", "You've customized the repository name.");
-                setTimeout(nextTask, 1500);
+            if (currentTask === 2 && !nameDone) {
+                clearTimeout(nameTimer);
+                nameTimer = setTimeout(() => {
+                    if (currentTask !== 2 || nameDone) return;
+                    nameDone = true;
+                    showSuccess("Name Modified!", "You've customized the repository name.");
+                    setTimeout(nextTask, 1500);
+                }, 1200);
             }
         });
 
         // Task 3: Description modification
+        let descTimer = null, descDone = false;
         document.getElementById('repoDescription').addEventListener('input', function() {
-            if (currentTask === 3) {
-                showSuccess("Description Updated!", "Perfect description modification.");
-                setTimeout(nextTask, 1500);
+            if (currentTask === 3 && !descDone) {
+                clearTimeout(descTimer);
+                descTimer = setTimeout(() => {
+                    if (currentTask !== 3 || descDone) return;
+                    descDone = true;
+                    showSuccess("Description Updated!", "Perfect description modification.");
+                    setTimeout(nextTask, 1500);
+                }, 1200);
             }
         });
 
